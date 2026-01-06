@@ -184,7 +184,7 @@
   <div class="info-box" id="infoBox">
     <div class="top-row" id="topRow">ON THE CLOCK</div>
     <div class="middle-row" id="middleRow">
-      <img src="bulls.png" class="team-logo" id="teamLogo">
+      <img src="logos/blasters.png" class="team-logo" id="teamLogo">
       <span id="pickText">Round 1 - PICK 7</span>
     </div>
     <div class="timer" id="timer">1:30</div>
@@ -246,8 +246,8 @@
     const pickText = document.getElementById('pickText');
     const timer = document.getElementById('timer');
 
-    // Update logo
-    teamLogo.src = teamName + ".png";
+    // Update logo using logos/ folder
+    teamLogo.src = "logos/" + teamName + ".png";
 
     // Uncollapse the box
     infoBox.classList.remove('collapsed');
