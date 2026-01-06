@@ -193,7 +193,7 @@
   <!-- CENTER CONTENT -->
   <div class="content-wrapper">
     <div class="content" id="contentText">
-      CHICAGO BULLS • BEST AVAILABLE: J. SMITH | A. THOMPSON | R. CLARK • UP NEXT: TOR → DAL → BOS
+      CURRENT TEAM • Round 1 - PICK 7 • BEST AVAILABLE: J. SMITH | A. THOMPSON | R. CLARK • UP NEXT: TOR → DAL → BOS
     </div>
   </div>
 
@@ -246,8 +246,8 @@
     const pickText = document.getElementById('pickText');
     const timer = document.getElementById('timer');
 
-    // Update logo using logos/ folder
-    teamLogo.src = "logos/" + teamName + ".png";
+    // Use lowercase filenames for GitHub Pages
+    teamLogo.src = "logos/" + teamName.toLowerCase() + ".png";
 
     // Uncollapse the box
     infoBox.classList.remove('collapsed');
