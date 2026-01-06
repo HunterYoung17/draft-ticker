@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draft Ticker</title>
+
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .ticker-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 80px;
+    background: #e6e6e6;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* LEFT RED INFO BOX */
+  .info-box {
+    width: 220px;
+    height: 100%;
+    background: linear-gradient(180deg, #e23528, #c91f16);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 0;
+    gap: 2px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.25);
+    transition: all 0.5s ease;
+  }
+
+  .info-box.collapsed {
+    width: 80px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .top-row {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    opacity: 0.9;
+  }
+
+  .middle-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .team-logo {
+    height: 30px;
+    transition: all 0.5s ease;
+  }
+
+  .timer {
+    font-size: 24px;
+    font-weight: 800;
+    margin-top: 2px;
+    transition: all 0.5s ease;
+  }
+
+  .info-box.collapsed .timer {
+    font-size: 12px;
+  }
+
+  .content-wrapper {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    font-size: 22px;
+    color: #111;
+    animation: popCycle 8s ease-in-out infinite;
+  }
+
+  @keyframes popCycle {
+    0% { opacity: 0; transform: translateY(30px); }
+    10% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(30px); }
+  }
+
+  .logo-box {
+    width: 100px;
+    height: 100%;
+    background: #dcdcdc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .league-logo {
+    max-height: 50px;
+    max-width: 80px;
+  }
+
+  /* Buttons & inputs styling */
+  .team-buttons {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.9);
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  .team-buttons button {
+    margin: 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: #e23528;
+    color: white;
+    border-radius: 3px;
+  }
+
+  .team-buttons input {
+    width: 40px;
+    margin-right: 4px;
+  }
+
+  #collapseBtn {
+    margin-top: 6px;
+    background: #111;
+  }
+
+</style>
+</head>
+
+<body>
+
+<!-- Controls panel -->
+<div class="team-buttons">
+  <strong>American Division</strong><br>
+  <button onclick="changeTeam('Blasters')">Blasters</button>
+  <button onclick="changeTeam('Howlers')">Howlers</button>
+  <button onclick="changeTeam('Moose')">Moose</button>
+  <button onclick="changeTeam('Pirates')">Pirates</button>
+  <button onclick="changeTeam('Shockwave')">Shockwave</button>
+  <button onclick="changeTeam('Stars')">Stars</button>
+  <br><strong>International Division</strong><br>
+  <button onclick="changeTeam('Anglers')">Anglers</button>
+  <button onclick="changeTeam('Flyers')">Flyers</button>
+  <button onclick="changeTeam('Ninjas')">Ninjas</button>
+  <button onclick="changeTeam('Samurai')">Samurai</button>
+  <button onclick="changeTeam('Vipers')">Vipers</button>
+  <button onclick="changeTeam('Zebras')">Zebras</button>
+  <br><strong>Set Round & Pick</strong><br>
+  Round: <input type="number" id="roundInput" min="1" value="1">
+  Pick: <input type="number" id="pickInput" min="1" value="7">
+  <button onclick="updatePick()">Update Pick</button>
+  <br>
+  <button id="collapseBtn">Collapse Box</button>
+</div>
+
+<div class="ticker-bar">
+
+  <!-- LEFT INFO BOX -->
+  <div class="info-box" id="infoBox">
+    <div class="top-row" id="topRow">ON THE CLOCK</div>
+    <div class="middle-row" id="middleRow">
+      <img src="bulls.png" class="team-logo" id="teamLogo">
+      <span id="pickText">Round 1 - PICK 7</span>
+    </div>
+    <div class="timer" id="timer">1:30</div>
+  </div>
+  
+  <!-- CENTER CONTENT -->
+  <div class="content-wrapper">
+    <div class="content" id="contentText">
+      CHICAGO BULLS • BEST AVAILABLE: J. SMITH | A. THOMPSON | R. CLARK • UP NEXT: TOR → DAL → BOS
+    </div>
+  </div>
+
+  <!-- RIGHT LOGO BOX -->
+  <div class="logo-box">
+    <img src="league-logo.png" class="league-logo">
+  </div>
+
+</div>
+
+<script>
+  // Timer
+  let totalSeconds = 90;
+  const timerEl = document.getElementById("timer");
+  let timerInterval = setInterval(updateTimer, 1000);
+
+  function updateTimer() {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    timerEl.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    if (totalSeconds > 0) totalSeconds--;
+  }
+
+  // Collapse box
+  function collapseBox() {
+    const infoBox = document.getElementById('infoBox');
+    const topRow = document.getElementById('topRow');
+    const pickText = document.getElementById('pickText');
+    const timer = document.getElementById('timer');
+    const contentText = document.getElementById('contentText');
+
+    infoBox.classList.add('collapsed');
+    topRow.style.display = 'none';
+    pickText.style.display = 'none';
+    clearInterval(timerInterval);
+    timer.textContent = "The Pick is in";
+
+    const round = document.getElementById('roundInput').value;
+    const pick = document.getElementById('pickInput').value;
+    contentText.textContent = `CURRENT TEAM • Round ${round} - PICK ${pick} • BEST AVAILABLE: J. SMITH | A. THOMPSON | R. CLARK • UP NEXT: TOR → DAL → BOS`;
+  }
+
+  document.getElementById('collapseBtn').addEventListener('click', collapseBox);
+
+  // Change team logo and uncollapse
+  function changeTeam(teamName) {
+    const teamLogo = document.getElementById('teamLogo');
+    const infoBox = document.getElementById('infoBox');
+    const topRow = document.getElementById('topRow');
+    const pickText = document.getElementById('pickText');
+    const timer = document.getElementById('timer');
+
+    // Update logo
+    teamLogo.src = teamName + ".png";
+
+    // Uncollapse the box
+    infoBox.classList.remove('collapsed');
+    topRow.style.display = 'block';
+    pickText.style.display = 'inline';
+
+    // Reset timer
+    totalSeconds = 90;
+    timer.textContent = "1:30";
+    clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  // Update round and pick
+  function updatePick() {
+    const round = document.getElementById('roundInput').value;
+    const pick = document.getElementById('pickInput').value;
+    const pickText = document.getElementById('pickText');
+    pickText.textContent = `Round ${round} - PICK ${pick}`;
+
+    const infoBox = document.getElementById('infoBox');
+    const contentText = document.getElementById('contentText');
+    if (infoBox.classList.contains('collapsed')) {
+      contentText.textContent = `CURRENT TEAM • Round ${round} - PICK ${pick} • BEST AVAILABLE: J. SMITH | A. THOMPSON | R. CLARK • UP NEXT: TOR → DAL → BOS`;
+    }
+  }
+</script>
+
+</body>
+</html>
